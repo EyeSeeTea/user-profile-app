@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2025-07-17T16:59:53.934Z\n"
-"PO-Revision-Date: 2025-07-17T16:59:53.935Z\n"
+"POT-Creation-Date: 2025-07-21T13:42:49.160Z\n"
+"PO-Revision-Date: 2025-07-21T13:42:49.160Z\n"
 
 msgid "Never"
 msgstr "Never"
@@ -486,6 +486,9 @@ msgstr "Use system default"
 
 msgid "No options"
 msgstr "No options"
+
+msgid "Disable SMS 2FA to change your phone number"
+msgstr "Disable SMS 2FA to change your phone number"
 
 msgid "System default"
 msgstr "System default"
