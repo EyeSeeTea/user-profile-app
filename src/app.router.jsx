@@ -8,7 +8,6 @@ import AboutPage from './aboutPage/AboutPage.component.jsx'
 import Account from './account/Account.component.jsx'
 import PasswordChangeSuccessDialog from './account/PasswordChangeSuccessDialog.jsx'
 import TwoFactor from './account/twoFactor/TwoFactor.jsx'
-import TwoFactor41AndLower from './account/twoFactor/TwoFactor41AndLower.jsx'
 import Sidebar from './layout/Sidebar.component.jsx'
 import Snackbar from './layout/Snackbar.component.jsx'
 import AppTheme from './layout/theme.js'
@@ -45,7 +44,7 @@ class AppRouter extends Component {
             d2: this.props.d2,
             muiTheme: AppTheme,
             featureToggle: {
-                emailFieldAsModal: this.minorVersion > 41,
+                emailFieldAsModal: true,
             },
         }
     }
@@ -87,9 +86,7 @@ class AppRouter extends Component {
                                     callback(null, (props) => (
                                         <WrappedApp
                                             {...props}
-                                            twoFactorMethods={
-                                                this.minorVersion > 41
-                                            }
+                                            twoFactorMethods
                                         />
                                     ))
                                 }
@@ -102,11 +99,7 @@ class AppRouter extends Component {
                                 <Route path="account" component={Account} />
                                 <Route
                                     path="twoFactor"
-                                    component={
-                                        this.minorVersion > 41
-                                            ? TwoFactor
-                                            : TwoFactor41AndLower
-                                    }
+                                    component={TwoFactor}
                                 />
                                 <Route
                                     path="passwordChanged"

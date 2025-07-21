@@ -16,6 +16,7 @@ import useTwoFaToggleMutation, {
 const enableRadioLabels = {
     [twoFactorAuthTypes.totp]: i18n.t('Authenticator app'),
     [twoFactorAuthTypes.email]: i18n.t('Email'),
+    [twoFactorAuthTypes.sms]: i18n.t('SMS'),
 }
 
 const mutationDefinitionBase = {
@@ -62,6 +63,7 @@ const TwoFactor = () => {
         availableTwoFAType,
         resetTwoFactorType,
         emailVerified,
+        phoneNumberVerified,
     } = useTwoFaToggleMutation()
 
     const defaultTwoFactorAuthToShow =
@@ -77,6 +79,8 @@ const TwoFactor = () => {
     ] = useState(false)
     const toggleEmail2faForbidden =
         twoFactorAuthToToShow === twoFactorAuthTypes.email && !emailVerified
+    const toggleSms2faForbidden =
+        twoFactorAuthToToShow === twoFactorAuthTypes.sms && !phoneNumberVerified
     const { show: showAlert } = useAlert(getAlertMessage, getAlertOptions)
 
     const mutationOptions = useMemo(() => {
@@ -166,8 +170,9 @@ const TwoFactor = () => {
                     isTwoFaEnabled={isTwoFaEnabled}
                     twoFactorAuthToToShow={twoFactorAuthToToShow}
                     toggleEmail2faForbidden={toggleEmail2faForbidden}
+                    toggleSms2faForbidden={toggleSms2faForbidden}
                 />
-                {twoFactorAuthToToShow && !toggleEmail2faForbidden && (
+                {twoFactorAuthToToShow && !toggleEmail2faForbidden && !toggleSms2faForbidden && (
                     <TwoFactorToggler
                         isTwoFaEnabled={isTwoFaEnabled}
                         toggleTwoFa={toggleTwoFa}

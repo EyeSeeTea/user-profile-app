@@ -5,13 +5,16 @@ import userProfileStore from '../../profile/profile.store.js'
 export const twoFactorAuthTypes = {
     totp: 'totp',
     email: 'email',
+    sms: 'sms',
 }
 
 const twoFactorBackendTypesToAuthTypes = {
     TOTP_ENABLED: twoFactorAuthTypes.totp,
     EMAIL_ENABLED: twoFactorAuthTypes.email,
+    SMS_ENABLED: twoFactorAuthTypes.sms,
     totp2faEnabled: twoFactorAuthTypes.totp,
     email2faEnabled: twoFactorAuthTypes.email,
+    sms2faEnabled: twoFactorAuthTypes.sms,
 }
 export const getAvailableTwoFAType = (BEAvailableTwoFAType) =>
     BEAvailableTwoFAType
@@ -31,7 +34,7 @@ export default function useTwoFaToggleMutation() {
     const [availableTwoFAType, setAvailableTwoFAType] = useState(
         getAvailableTwoFAType(optionValueStore?.state.twoFactorMethods)
     )
-    const { emailVerified } = userProfileStore.state
+    const { emailVerified, phoneNumber } = userProfileStore.state
 
     const resetTwoFactorType = (twoFactorType) => {
         const BETwoFactorBackendType = Object.entries(
@@ -64,5 +67,6 @@ export default function useTwoFaToggleMutation() {
         availableTwoFAType,
         resetTwoFactorType,
         emailVerified,
+        phoneNumberVerified: !!phoneNumber, // [SMS2FA] TODO: verify phone number like email?
     }
 }
