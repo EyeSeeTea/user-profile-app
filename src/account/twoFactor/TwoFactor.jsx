@@ -2,7 +2,9 @@ import { useAlert, useDataMutation } from '@dhis2/app-runtime'
 import i18n from '@dhis2/d2-i18n'
 import { Card, SegmentedControl } from '@dhis2/ui'
 import cx from 'classnames'
+import { log } from 'loglevel'
 import React, { useMemo, useState } from 'react'
+import { useTwoFactorRestrictedMode } from '../../hooks/useTwoFactorRestrictedMode.js'
 import styles from './TwoFactor.module.css'
 import TwoFactorDisableNoticeBox from './TwoFactorDisableNoticeBox.jsx'
 import TwoFactorEnableNotice from './TwoFactorEnableNotice.jsx'
@@ -58,6 +60,7 @@ const getAlertOptions = ({ error }) =>
     error ? { critical: true } : { success: true }
 
 const TwoFactor = () => {
+    const { clearRestrictedMode } = useTwoFactorRestrictedMode()
     const {
         enabledTwoFAType,
         availableTwoFAType,
@@ -93,14 +96,18 @@ const TwoFactor = () => {
                         !attemptingToEnableTwoFa
                     )
                 showAlert({ attemptingToEnableTwoFa })
+                
+                if (attemptingToEnableTwoFa) {
+                    clearRestrictedMode()
+                }
             },
             onError: (error) => {
-                console.error(error)
+                log.error(error)
                 setLastActionWasTwoFaDisableSuccess(false)
                 showAlert({ attemptingToEnableTwoFa, error })
             },
         }
-    }, [enabledTwoFAType, showAlert, twoFactorAuthToToShow, resetTwoFactorType])
+    }, [enabledTwoFAType, showAlert, twoFactorAuthToToShow, resetTwoFactorType, clearRestrictedMode])
 
     const enableDataMutation = useDataMutation(
         enableMutationDefinition,

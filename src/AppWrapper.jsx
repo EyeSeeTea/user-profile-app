@@ -2,8 +2,11 @@ import { useD2 } from '@dhis2/app-runtime-adapter-d2'
 import log from 'loglevel'
 import React from 'react'
 import AppRouter from './app.router.jsx'
+import { useHideDhisHeader } from './hooks/useHideDhisHeader.js'
+import { useTwoFactorRestrictedMode } from './hooks/useTwoFactorRestrictedMode.js'
 import optionValueStore from './optionValue.store.js'
 import userProfileStore from './profile/profile.store.js'
+import restrictedModeStore from './restrictedMode.store.js'
 import userSettingsStore from './settings/userSettings.store.js'
 import './locales/index.js'
 import './layout/app.css'
@@ -11,6 +14,10 @@ import './layout/app.css'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
 const AppWrapper = () => {
+    const { isRestricted } = useTwoFactorRestrictedMode()
+
+    useHideDhisHeader(isRestricted)
+
     const { d2 } = useD2({
         onInitialized: (d2) => {
             const api = d2.Api.getApi()
@@ -21,7 +28,6 @@ const AppWrapper = () => {
                 api.get('locales/db'),
                 api.get('userSettings', { useFallback: false }),
                 d2.system.settings.all(),
-                api.get('2fa/enabled'),
             ])
                 .then(
                     (results) => {
@@ -51,7 +57,7 @@ const AppWrapper = () => {
                         delete d2.currentUser.twoFA
 
                         userProfileStore.setState(d2.currentUser)
-                        userProfileStore.state.twoFaEnabled = results[5]
+                        userProfileStore.state.twoFaEnabled = false
                         userSettingsStore.setState(results[3])
                         optionValueStore.setState({
                             styles,
@@ -72,6 +78,22 @@ const AppWrapper = () => {
                     (error) => {
                         log.error('Failed to load user settings:', error)
                     }
+                )
+                .then(() =>
+                    api.get('2fa/enabled').then(
+                        (result) => {
+                            userProfileStore.state.twoFaEnabled = result
+                        },
+                        (err) => {
+                            const isRequiresTwoFactorEnrolment = err?.loginStatus === 'REQUIRES_TWO_FACTOR_ENROLMENT' 
+                            if (isRequiresTwoFactorEnrolment) {
+                                restrictedModeStore.setRestrictedMode(true)
+                            } else {
+                                log.debug('2fa/enabled error:', err)
+                            }
+                            userProfileStore.state.twoFaEnabled = false
+                        }
+                    )
                 )
                 .then(() => api.get('configuration/twoFactorMethods'))
                 .then(
