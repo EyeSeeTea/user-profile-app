@@ -3,11 +3,14 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { getTWOFAType } from '../account/twoFactor/useTwoFaToggleMutation.js'
 import appActions from '../app.actions.jsx'
+import { useTwoFactorRestrictedMode } from '../hooks/useTwoFactorRestrictedMode.js'
 import i18n from '../locales/index.js'
 import optionValueStore from '../optionValue.store.js'
 import userProfileStore from '../profile/profile.store.js'
 
 function SidebarWrapper(props) {
+    const { filterRestrictedSections } = useTwoFactorRestrictedMode()
+
     const twoFactorMethods = optionValueStore?.state.twoFactorMethods
     const hasEnabledTwoFactorMethods = !!getTWOFAType(
         userProfileStore.state.twoFactorType
@@ -22,7 +25,7 @@ function SidebarWrapper(props) {
         hasTwoFactorMethods ||
         hasEnabledTwoFactorMethods
 
-    const sideBarSections = [
+    const allSideBarSections = [
         {
             key: 'profile',
             label: i18n.t('User profile'),
@@ -62,6 +65,8 @@ function SidebarWrapper(props) {
         },
     ].filter((section) => section)
 
+    const sideBarSections = filterRestrictedSections(allSideBarSections)
+        
     return (
         <Sidebar
             sections={sideBarSections}
