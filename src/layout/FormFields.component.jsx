@@ -252,6 +252,16 @@ function createEmailField({ fieldBase, valueStore, onUpdate, d2 }) {
     })
 }
 
+function createPhoneNumberField(fieldBase, mapping, d2) {
+    const textField = createTextField(fieldBase, mapping)
+    if (d2?.currentUser?.twoFactorType === 'SMS_ENABLED') {
+        textField.props.disabled = true
+        const message = i18n.t('Disable SMS 2FA to change your phone number')
+        textField.component = wrapWithLabel(textField.component, message)
+    }
+    return textField;
+}
+
 function createFieldBaseObject(fieldName, mapping, valueStore) {
     if (!mapping) {
         log.warn(`Mapping not found for field: ${fieldName}`)
@@ -290,8 +300,12 @@ function createField({ fieldName, valueStore, d2, featureToggle, onUpdate }) {
     const fieldBase = createFieldBaseObject(fieldName, mapping, valueStore)
 
     switch (mapping.type) {
-        case 'textfield':
+        case 'textfield': {
+            if (fieldName === 'phoneNumber') {
+                return createPhoneNumberField(fieldBase, mapping, d2)
+            }
             return createTextField(fieldBase, mapping)
+        }
         case 'date':
             return createDateField(fieldBase, fieldName, mapping, valueStore)
         case 'checkbox':

@@ -2,7 +2,9 @@ import { useAlert, useDataMutation } from '@dhis2/app-runtime'
 import i18n from '@dhis2/d2-i18n'
 import { Card, SegmentedControl } from '@dhis2/ui'
 import cx from 'classnames'
+import { log } from 'loglevel'
 import React, { useMemo, useState } from 'react'
+import { useTwoFactorRestrictedMode } from '../../hooks/useTwoFactorRestrictedMode.js'
 import styles from './TwoFactor.module.css'
 import TwoFactorDisableNoticeBox from './TwoFactorDisableNoticeBox.jsx'
 import TwoFactorEnableNotice from './TwoFactorEnableNotice.jsx'
@@ -16,6 +18,7 @@ import useTwoFaToggleMutation, {
 const enableRadioLabels = {
     [twoFactorAuthTypes.totp]: i18n.t('Authenticator app'),
     [twoFactorAuthTypes.email]: i18n.t('Email'),
+    [twoFactorAuthTypes.sms]: i18n.t('SMS'),
 }
 
 const mutationDefinitionBase = {
@@ -57,11 +60,13 @@ const getAlertOptions = ({ error }) =>
     error ? { critical: true } : { success: true }
 
 const TwoFactor = () => {
+    const { clearRestrictedMode } = useTwoFactorRestrictedMode()
     const {
         enabledTwoFAType,
         availableTwoFAType,
         resetTwoFactorType,
         emailVerified,
+        phoneNumberVerified,
     } = useTwoFaToggleMutation()
 
     const defaultTwoFactorAuthToShow =
@@ -77,6 +82,8 @@ const TwoFactor = () => {
     ] = useState(false)
     const toggleEmail2faForbidden =
         twoFactorAuthToToShow === twoFactorAuthTypes.email && !emailVerified
+    const toggleSms2faForbidden =
+        twoFactorAuthToToShow === twoFactorAuthTypes.sms && !phoneNumberVerified
     const { show: showAlert } = useAlert(getAlertMessage, getAlertOptions)
 
     const mutationOptions = useMemo(() => {
@@ -89,14 +96,18 @@ const TwoFactor = () => {
                         !attemptingToEnableTwoFa
                     )
                 showAlert({ attemptingToEnableTwoFa })
+                
+                if (attemptingToEnableTwoFa) {
+                    clearRestrictedMode()
+                }
             },
             onError: (error) => {
-                console.error(error)
+                log.error(error)
                 setLastActionWasTwoFaDisableSuccess(false)
                 showAlert({ attemptingToEnableTwoFa, error })
             },
         }
-    }, [enabledTwoFAType, showAlert, twoFactorAuthToToShow, resetTwoFactorType])
+    }, [enabledTwoFAType, showAlert, twoFactorAuthToToShow, resetTwoFactorType, clearRestrictedMode])
 
     const enableDataMutation = useDataMutation(
         enableMutationDefinition,
@@ -166,8 +177,9 @@ const TwoFactor = () => {
                     isTwoFaEnabled={isTwoFaEnabled}
                     twoFactorAuthToToShow={twoFactorAuthToToShow}
                     toggleEmail2faForbidden={toggleEmail2faForbidden}
+                    toggleSms2faForbidden={toggleSms2faForbidden}
                 />
-                {twoFactorAuthToToShow && !toggleEmail2faForbidden && (
+                {twoFactorAuthToToShow && !toggleEmail2faForbidden && !toggleSms2faForbidden && (
                     <TwoFactorToggler
                         isTwoFaEnabled={isTwoFaEnabled}
                         toggleTwoFa={toggleTwoFa}
